@@ -1,0 +1,30 @@
+
+payment-notification-microservices/
+├── docker-compose.yml
+├── README.md
+├── payment-service/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── circuit_breaker.py
+│   │   ├── config.py
+│   │   └── services/
+│   │       ├── __init__.py
+│   │       └── notification_service.py
+├── aldeamo-service/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   └── config.py
+└── twilio-service/
+    ├── Dockerfile
+    ├── requirements.txt
+    ├── app/
+    │   ├── __init__.py
+    │   ├── main.py
+    │   └── config.py
+```
