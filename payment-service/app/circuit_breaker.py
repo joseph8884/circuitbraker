@@ -25,34 +25,22 @@ class CircuitBreakerListener(pybreaker.CircuitBreakerListener):
 
         logger.info(f"🔄 Circuit Breaker para {self.service_name} cambió de {old_state_desc} a {new_state_desc}")
 
-        # Si el circuito se abre, programar una verificación para el modo half-open
-        if str(new_state) == 'open':
-            logger.warning(
-                f"⚠️ Circuit Breaker abierto: Se usará Twilio como respaldo por los próximos {settings.RESET_TIMEOUT} segundos")
-
     def failure(self, cb, exc):
         logger.warning(f"❌ Fallo #{cb.current_failures} en {self.service_name}: {exc}")
-        remaining = settings.FAILURE_THRESHOLD - cb.current_failures
-        if remaining > 0:
-            logger.info(f"⚠️ {remaining} fallos más antes de abrir el Circuit Breaker")
+        if cb.current_failures < 3:  # 3 = fail_max
+            logger.info(f"⚠️ {3 - cb.current_failures} fallos más antes de abrir el Circuit Breaker")
 
     def success(self, cb):
         if cb.current_failures > 0:
             logger.info(f"✅ Solicitud exitosa a {self.service_name} después de {cb.current_failures} fallos")
-            # Resetear el contador de fallos cuando hay un éxito
-            cb._failures = 0
-            cb.current_failures = 0
-        else:
-            logger.info(f"✅ Solicitud exitosa a {self.service_name}")
-
-
-# Asegurar valores de configuración razonables para pruebas con Postman
-reset_timeout = 15  # 15 segundos es un tiempo razonable para pruebas
+        cb._failures = 0
+        cb.current_failures = 0
+            
 
 # Crear el circuit breaker para Aldeamo
 aldeamo_breaker = pybreaker.CircuitBreaker(
-    fail_max=3,  # Solo 3 fallos consecutivos para abrir el circuito (más rápido para pruebas)
-    reset_timeout=reset_timeout,  # Tiempo en segundos para pasar de open a half-open
+    fail_max=3,  # 3 fallos consecutivos para abrir el circuito
+    reset_timeout=15,  # 15 segundos para pasar de open a half-open (tiempo razonable para pruebas)
     exclude=[],  # No excluir ninguna excepción
     name="aldeamo_service",
     listeners=[CircuitBreakerListener("Aldeamo")]
